@@ -6,6 +6,7 @@ export default function Login() {
     const [uid, setUid] = useState("");
     const [password, setPassword] = useState("");
     const [username, setUsername] = useState("");
+    const [error,setError] = useState("");
 
     const login = async () => {
 
@@ -17,8 +18,14 @@ export default function Login() {
             body: JSON.stringify({ uid, password })
         });
 
-        const data = await res.json();
+        if (!res.ok) {
+            const msg = await res.text();
+            setError(msg);
+            return;
+        }
 
+        const data = await res.json();
+        setError("");
         setUsername(data.username);
     }
 
@@ -41,6 +48,7 @@ export default function Login() {
                 login
             </button>
 
+            {error && <p style={{color:"red"}}>{error}</p>}
             <p>username: {username}</p>
 
             <p>
