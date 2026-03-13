@@ -81,11 +81,12 @@ async fn signup(State(state): State<AppState>, Json(req): Json<SignupReq>) -> Js
     Json(SignupRes { uid })
 }
 
-async fn login(State(state): State<AppState>, Json(req): Json<LoginReq>) -> Result<Json<LoginRes>,(StatusCode, String)> {
+async fn login(
+    State(state): State<AppState>,
+    Json(req): Json<LoginReq>,
+) -> Result<Json<LoginRes>, (StatusCode, String)> {
     let row =
-        sqlx::query_as::<_, (String,)>(
-            "SELECT username FROM users WHERE uid=? AND password=?"
-        )
+        sqlx::query_as::<_, (String,)>("SELECT username FROM users WHERE uid=? AND password=?")
             .bind(&req.uid)
             .bind(&req.password)
             .fetch_optional(&state.db)
@@ -93,6 +94,9 @@ async fn login(State(state): State<AppState>, Json(req): Json<LoginReq>) -> Resu
             .expect("Login: failed");
     match row {
         Some((username,)) => Ok(Json(LoginRes { username })),
-        None => Err((StatusCode::UNAUTHORIZED, "Invalid UID or password".to_string())),
+        None => Err((
+            StatusCode::UNAUTHORIZED,
+            "Invalid UID or password".to_string(),
+        )),
     }
 }
