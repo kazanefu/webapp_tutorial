@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-
-const API_BASE_URL = "http://localhost:3000";
+import {API_BASE_URL} from "../App";
 
 export default function Signup() {
     const [username, setUsername] = useState("");
@@ -9,6 +8,7 @@ export default function Signup() {
     const [uid, setUid] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [passwordShow, setPasswordShow] = useState(false);
 
     const signup = async () => {
         setLoading(true);
@@ -47,12 +47,15 @@ export default function Signup() {
                 disabled={loading}
             />
             <input
-                type="password"
+                type={passwordShow ? "text" : "password"}
                 placeholder="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 disabled={loading}
             />
+            <button onClick={() => setPasswordShow(!passwordShow)} >
+                {passwordShow ? "hide" : "show"}
+            </button>
             <button onClick={signup} disabled={loading || !username || !password}>
                 {loading ? "Creating..." : "Create Account"}
             </button>

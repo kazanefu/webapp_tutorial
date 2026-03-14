@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { API_BASE_URL } from "../App";
 
-const API_BASE_URL = "http://localhost:3000";
 
 export default function Login() {
     const [uid, setUid] = useState("");
@@ -9,6 +9,8 @@ export default function Login() {
     const [username, setUsername] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [passwordShow, setPasswordShow] = useState(false);
+    const [myname, setMyName] = useState("");
 
     const login = async () => {
         setLoading(true);
@@ -21,6 +23,7 @@ export default function Login() {
                 headers: {
                     "Content-Type": "application/json"
                 },
+                credentials: "include",
                 body: JSON.stringify({ uid, password })
             });
 
@@ -39,6 +42,29 @@ export default function Login() {
         }
     }
 
+    const me = async () => {
+        setLoading(true);
+        setMyName("");
+        setError("");
+        try {
+            const res = await fetch(`${API_BASE_URL}/me`, {
+                credentials: "include"
+            });
+            if (!res.ok) {
+                const msg = await res.text();
+                setError(msg);
+                return;
+            }
+            const data = await res.json();
+            setMyName(data.username);
+        } catch {
+            setError("Failed to connect to server");
+        } finally {
+            setLoading(false);
+        }
+
+    }
+
     return (
         <div>
             <h1>Login</h1>
@@ -49,12 +75,15 @@ export default function Login() {
                 disabled={loading}
             />
             <input
-                type="password"
+                type={passwordShow ? "text" : "password"}
                 placeholder="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 disabled={loading}
             />
+            <button onClick={() => setPasswordShow(!passwordShow)} >
+                {passwordShow ? "hide" : "show"}
+            </button>
             <button onClick={login} disabled={loading || !uid || !password}>
                 {loading ? "Logging in..." : "Login"}
             </button>
@@ -71,6 +100,9 @@ export default function Login() {
                     <button disabled={loading}>Create account?</button>
                 </Link>
             </p>
+            <button onClick={me} >
+                {myname ? myname:"not logged in"}
+            </button>
         </div>
     );
 }
