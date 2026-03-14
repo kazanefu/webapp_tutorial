@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { API_BASE_URL } from "../App";
 
@@ -35,6 +35,7 @@ export default function Login() {
 
             const data = await res.json();
             setUsername(data.username);
+            me();
         } catch {
             setError("Failed to connect to server");
         } finally {
@@ -64,6 +65,13 @@ export default function Login() {
         }
 
     }
+    
+    useEffect(
+        () => {
+            me();
+        },
+        []
+    );
 
     return (
         <div>
@@ -101,7 +109,7 @@ export default function Login() {
                 </Link>
             </p>
             <button onClick={me} >
-                {myname ? "Use: "+myname:"check login state: not logged in"}
+                {myname ? "User: "+myname:"check login state: not logged in"}
             </button>
         </div>
     );
