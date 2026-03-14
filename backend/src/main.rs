@@ -54,15 +54,21 @@ async fn main() -> anyhow::Result<()> {
     .execute(&db)
     .await?;
 
+    let addr = std::env::var("LISTEN_ADDR").unwrap_or_else(|_| "127.0.0.1:3000".to_string());
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+
+    let cors = CorsLayer::new()
+        .allow_origin(tower_http::cors::Any) // Still permissive for tutorial, but usage is clearer
+        .allow_methods([axum::http::Method::POST, axum::http::Method::GET])
+        .allow_headers([axum::http::header::CONTENT_TYPE]);
+
     let app = Router::new()
         .route("/signup", post(signup))
         .route("/login", post(login))
         .with_state(AppState { db })
-        .layer(CorsLayer::permissive());
+        .layer(cors);
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
-
-    println!("backend running");
+    println!("backend running on {}", addr);
 
     axum::serve(listener, app).await?;
 
@@ -78,17 +84,27 @@ async fn signup(
         return Err((StatusCode::BAD_REQUEST, "ASCII only".to_string()));
     }
 
-    let password_hash = tokio::task::spawn_blocking(move || hash_password(&req.password));
+    let password_hash = tokio::task::spawn_blocking(move || hash_password(&req.password))
+        .await
+        .map_err(|e| {
+            eprintln!("Blocking task error: {:?}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal Server Error".to_string(),
+            )
+        })?
+        .map_err(|e| {
+            eprintln!("Password hash error: {:?}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Internal Server Error".to_string(),
+            )
+        })?;
 
     sqlx::query("INSERT INTO users(uid,username,password_hash) VALUES(?,?,?)")
         .bind(&uid)
         .bind(&req.username)
-        .bind(&password_hash.await.map_err(|_| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Password hash error".to_string(),
-            )
-        })?)
+        .bind(&password_hash)
         .execute(&state.db)
         .await
         .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "DB error".to_string()))?;
