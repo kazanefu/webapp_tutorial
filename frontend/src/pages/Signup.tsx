@@ -44,9 +44,9 @@ export default function Signup() {
 
             <p>UID: {uid}</p>
             <p>
-                            <Link to="/login">
-                <button>Go to Login</button>
-            </Link>
+                <Link to="/login">
+                    <button>Go to Login</button>
+                </Link>
             </p>
 
 
