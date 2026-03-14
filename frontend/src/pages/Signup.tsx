@@ -7,6 +7,7 @@ export default function Signup() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [uid, setUid] = useState("");
+    const [error,setError] = useState("");
 
     const signup = async () => {
 
@@ -17,10 +18,17 @@ export default function Signup() {
             },
             body: JSON.stringify({ username, password })
         });
+        
+        if(!res.ok){
+            const msg = await res.text();
+            setError(msg);
+            return;
+        }
 
         const data = await res.json();
 
         setUid(data.uid);
+        setError("");
     }
 
     return (
@@ -42,6 +50,7 @@ export default function Signup() {
                 create account
             </button>
 
+            {error && <p style={{color:"red"}}>{error}</p>}
             <p>UID: {uid}</p>
             <p>
                 <Link to="/login">
