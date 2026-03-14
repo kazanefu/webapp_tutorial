@@ -101,7 +101,7 @@ export default function Login() {
                 </Link>
             </p>
             <button onClick={me} >
-                {myname ? myname:"check login state: not logged in"}
+                {myname ? "Use: "+myname:"check login state: not logged in"}
             </button>
         </div>
     );
