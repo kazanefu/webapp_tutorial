@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { API_BASE_URL } from "../App";
+import LogoutButton from "../components/LogoutButton"
 
 
 export default function Login() {
@@ -45,21 +46,21 @@ export default function Login() {
 
     const me = async () => {
         setLoading(true);
-        setMyName("");
-        setError("");
         try {
             const res = await fetch(`${API_BASE_URL}/me`, {
                 credentials: "include"
             });
             if (!res.ok) {
                 const msg = await res.text();
-                setError(msg);
+                setMyName("");
+                console.error(msg);
                 return;
             }
             const data = await res.json();
             setMyName(data.username);
         } catch {
             setError("Failed to connect to server");
+            setMyName("");
         } finally {
             setLoading(false);
         }
@@ -111,6 +112,7 @@ export default function Login() {
             <button onClick={me} >
                 {myname ? "User: "+myname:"check login state: not logged in"}
             </button>
+            <div><LogoutButton onClick={me}/></div>
         </div>
     );
 }
