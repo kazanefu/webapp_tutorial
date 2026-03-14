@@ -1,7 +1,9 @@
 pub mod password_hash_check {
     use argon2::{
         Argon2,
-        password_hash::{PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng,PasswordHash},
+        password_hash::{
+            PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng,
+        },
     };
 
     pub fn hash_password(password: &str) -> String {
